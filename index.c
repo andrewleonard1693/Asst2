@@ -84,8 +84,15 @@ void listdir(char const* dirname)
    { 
    	if(curr_ent->d_type==DT_REG)
    	{
+   		char path[200];
+   		char *res = realpath(curr_ent->d_name, res);
+   		printf("%s\n", res);
    		//open file
    		FILE * textFile =fopen(curr_ent->d_name,"r");
+   		if(textFile==NULL)
+   		{
+   			printf("Error: %d (%s)\n", errno, strerror(errno));
+   		}
    		//get string of characters from file
    		char *copiedString=copyFileInput(textFile);
    		//parse words from file
