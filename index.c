@@ -14,13 +14,15 @@ typedef struct _fNode
 {
 	char *fileName;
 	int numberOfOccurrences;
-}
+}fileNode;
+
 typedef struct _wNode
 {
 	char *word;
-	struct* _Node left;
-	struct* _Node right;
-	struct* _fNode head;
+	int isNull;
+	struct _Node *left;
+	struct _Node *right;
+	struct _fNode *head;
 }wordNode;
 
 
@@ -38,6 +40,27 @@ typedef struct _wNode
 		}
 	}
 }*/
+char* copyFileInput(FILE *d_file);
+char* copyFileInput(FILE *d_file)
+{
+    fseek(d_file, 0, SEEK_END);
+    long int size = ftell(d_file);
+    rewind(d_file);
+    char *string = calloc((size+1), sizeof(char));
+    fread(string,1,size,d_file);
+    return string;
+}
+char* stringCopier(char* start, char* end, int count);
+char* stringCopier(char* start, char* end, int count){
+	char* returnChar = (char*)calloc((count+1),sizeof(char));
+	int i = 0;
+	while(start!=end){
+				returnChar[i]=*start;
+				start++;
+				i++;
+			}
+			return returnChar;	
+}
 
 int is_dot_or_dot_dot(char const* name);
 int is_dot_or_dot_dot(char const* name)
@@ -61,6 +84,35 @@ void listdir(char const* dirname)
    { 
    	if(curr_ent->d_type==DT_REG)
    	{
+   		//open file
+   		FILE * textFile =fopen(curr_ent->d_name,"r");
+   		//get string of characters from file
+   		char *copiedString=copyFileInput(textFile);
+   		//parse words from file
+   		char *start = copiedString;
+   		char *end = copiedString;
+   		while(*end!='\0')
+   		{
+   			int count = 0;
+   			while(isalpha(*end))
+					{
+						count++;
+						end++;
+					}
+							if(count>0&&(!isalpha(*end)))
+							{
+								char* temp = stringCopier(start,end,count);
+								printf("%s\n", temp);
+							}
+							if(!*end)
+							{
+								break;
+							}
+						end++;
+						start=end;
+   		}
+   		//insert all words from file into a BST
+
    		printf("%s\n", curr_ent->d_name);	
    	}
 
@@ -91,7 +143,9 @@ void listdir(char const* dirname)
 
 int main(int argc, char const *argv[])
 {
-	struct *wordNode root =NULL;
+	//create word BST root
+	wordNode* root=(wordNode*)malloc(1*sizeof(wordNode));
+	root->isNull=-1;
 
 	struct dirent *something = NULL;
 	int status;
