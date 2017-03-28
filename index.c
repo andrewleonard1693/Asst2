@@ -10,13 +10,13 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-typedef struct _Node
-{
-	char *word;
-	struct _Node left;
-	struct _Node right;
-	struct _Node head;
-}Node;
+// typedef struct _Node
+// {
+// 	char *word;
+// 	struct* _Node left;
+// 	struct* _Node right;
+// 	struct* _Node head;
+// }Node;
 
 /*indexDirectory(directoryName, myIndex){
 	open directoryName
@@ -32,6 +32,7 @@ typedef struct _Node
 	}
 }*/
 
+
 int main(int argc, char const *argv[])
 {
 	/*
@@ -46,8 +47,34 @@ int main(int argc, char const *argv[])
 
 	*/
 	struct dirent *something = NULL;
-	DIR *directory =opendir("./"); //opening a directory in current working directory
+	int status;
+    struct stat st_buf;
+	status = stat (argv[1], &st_buf);
 
+    if (status != 0) {
+        printf ("Error, errno = %d\n", errno);
+        return 1;
+    }
+
+    if (S_ISREG (st_buf.st_mode)) {
+    	//Perform indexFile function
+        printf ("%s is a regular file.\n", argv[1]);
+    }
+    if (S_ISDIR (st_buf.st_mode)) {
+        printf ("%s is a directory.\n", argv[1]);
+    }
+	DIR *directory =opendir(argv[1]); //opening a directory in current working directory
+	if(directory==NULL)
+	{
+		printf("%s\n", "Argument is not a directory. Exiting indexer.");
+
+	}
+
+	// int result = 0;
+	// int nameLen = 0;
+	// char *invertedIndexFileName = argv[1]; //get the file name for the inverted index file
+	// const char *startingDirectory = argv[1];
+	// int fd = open("./invertedIndexFileName",O_RDWR|O_CREAT,S_IWUSR|S_IRUSR);
 	do
 	{
 		something=readdir(directory);
@@ -55,13 +82,21 @@ int main(int argc, char const *argv[])
 		{
 			if(something->d_type==DT_REG) // regular file
 			{
-				char *
-				//do something
+				printf("%s\n", "found a file!");
 			}	
 			else if(something->d_type==DT_DIR)	//	directory
 			{
-				//do something
+				printf("%s\n", "found a directory!");
 			}
+			else
+			{
+				printf("%s\n", "Found something that is not a directory or a file. Exiting indexer.");
+			}
+			printf("%s\n", something->d_name);
+
+
+			// nameLen = strlen(d_name);
+			// result = write(fd, something->d_name, nameLen);
 		}
 	}while(something!=NULL);
 	
