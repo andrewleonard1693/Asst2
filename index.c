@@ -32,20 +32,45 @@
 	}
 }*/
 
+int recursive(DIR * d, struct dirent * s);
+int recursive(DIR * d, struct dirent * s)
+{
+	do
+	{
+		if(s!=NULL)
+		{
+			if(s->d_type==DT_REG) // regular file
+			{
+				printf("%s\n", "found a file!");
+				printf("%s\n",s->d_name);
+				return 0;
+			}	
+			else if(s->d_type==DT_DIR)	//	directory
+			{
+				printf("%s\n", "found a directory!");
+				printf("%s\n",s->d_name);
+				s=readdir(d);
+				// d=opendir(s->d_name);
+				recursive(d,s);
+				closedir(d);
+				return 0;
+			}
+			else
+			{
+				printf("%s\n", "Found something that is not a directory or a file. Exiting indexer.");
+			}
 
+
+			// nameLen = strlen(d_name);
+			// result = write(fd, something->d_name, nameLen);
+		}
+	}while(s!=NULL);
+	
+	closedir(d); //closing the directory
+	return 0;
+}
 int main(int argc, char const *argv[])
 {
-	/*
-	--Test if file is a directory or a file--
-		if(argv[1]is a file){
-			call IndexFile(argv[1], myIndex);
-		}
-		else if(argv[1] is a directory){
-			call IndexDirectory(argv[1], myIndex);
-		}
-
-
-	*/
 	struct dirent *something = NULL;
 	int status;
     struct stat st_buf;
@@ -62,49 +87,20 @@ int main(int argc, char const *argv[])
     }
     if (S_ISDIR (st_buf.st_mode)) {
         printf ("%s is a directory.\n", argv[1]);
-    }
-	DIR *directory =opendir(argv[1]); //opening a directory in current working directory
-	if(directory==NULL)
-	{
-		printf("%s\n", "Argument is not a directory. Exiting indexer.");
+        DIR *directory =opendir(argv[1]); //opening a directory in current working directory
+			if(directory==NULL)
+			{
+				printf("%s\n", "Argument is not a directory. Exiting indexer.");
 
-	}
+			}
+		something = readdir(directory);
+		recursive(directory, something);
+		return 0;
+    }
 
 	// int result = 0;
 	// int nameLen = 0;
 	// char *invertedIndexFileName = argv[1]; //get the file name for the inverted index file
 	// const char *startingDirectory = argv[1];
 	// int fd = open("./invertedIndexFileName",O_RDWR|O_CREAT,S_IWUSR|S_IRUSR);
-	do
-	{
-		something=readdir(directory);
-		if(something!=NULL)
-		{
-			if(something->d_type==DT_REG) // regular file
-			{
-				printf("%s\n", "found a file!");
-			}	
-			else if(something->d_type==DT_DIR)	//	directory
-			{
-				printf("%s\n", "found a directory!");
-			}
-			else
-			{
-				printf("%s\n", "Found something that is not a directory or a file. Exiting indexer.");
-			}
-			printf("%s\n", something->d_name);
-
-
-			// nameLen = strlen(d_name);
-			// result = write(fd, something->d_name, nameLen);
-		}
-	}while(something!=NULL);
-	
-	
-
-
-
-
-	closedir(directory); //closing the directory
-	return 0;
 }
