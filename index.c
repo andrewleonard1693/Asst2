@@ -193,28 +193,49 @@ void bubbleSort(fileNode *start)
 }
 
 
-void printBST(wordNode* tree, const char* index)
+void printBST(wordNode* tree, int fd, int res)
 {
 	if(tree == NULL){
 		return;
 	}
-	printBST(tree->left, index);
-	// char *string = (char*)calloc(14+1+strlen(tree->word),sizeof(char));
-	// sprintf(string,"<word text="%s">",tree->word);
-	// int fd = open(index,O_RDWR|O_CREAT,S_IWUSR|S_IRUSR);
-	// int result = write(fd,string,strlen(string));
-	// result = write(fd,"\n",1);
+	printBST(tree->left, fd, res);
+	// res = write(fd,"\n",1);
+	res = write(fd,"\t",1);
+	char *string = (char*)calloc(15+strlen(tree->word),sizeof(char));
+	sprintf(string,"<word text=\"%s\">",tree->word);
+	res = write(fd,string,strlen(string));
+	res = write(fd,"\n",1);
+	res = write(fd,"\t",1);
+	res = write(fd,"\t",1);
+	char *wordCloseTag = "</word>";
 
-	printf("Word = %s ",tree->word);
 	fileNode *ptr = tree->head;
 	bubbleSort(tree->head);
+	char buffer[10];
 	while(ptr!=NULL)
 	{
-	printf("file: %s, OCC: %d ",ptr->fileName,ptr->numberOfOccurrences);
+		int num = ptr->numberOfOccurrences;
+		snprintf(buffer, 10, "%d", num);
+		char* fileLine = (char*)calloc(21+1+strlen(ptr->fileName)+strlen(buffer),sizeof(char));
+		sprintf(fileLine,"<file name=\"%s\">%s</file>",ptr->fileName,buffer);
+		res = write(fd,fileLine,strlen(fileLine));
+		if(ptr->next==NULL)
+		{
+			res = write(fd,"\n",1);
+			res = write(fd,"\t",1);
+		}else
+		{
+			res = write(fd,"\n",1);
+			res = write(fd,"\t",1);
+			res = write(fd,"\t",1);
+		}
+	// printf("file: %s, OCC: %d ",ptr->fileName,ptr->numberOfOccurrences);
+
 	ptr=ptr->next;
 	}
-	printf("\n");
-	printBST(tree->right, index);
+	res = write(fd,wordCloseTag,strlen(wordCloseTag));
+	res = write(fd,"\n",1);
+	printBST(tree->right, fd, res);
 }
 
 /*Function to get return a copy of the text within the file*/
@@ -343,7 +364,6 @@ int main(int argc, char const *argv[])
     static char *fileIndexOpenTag = "<fileIndex>";
     static char *fileIndexCloseTag = "</fileIndex>";
     static char *wordCloseTag = "</word>";
-    static char *fileCloseTag = "</file>";
     result = write(fd,xml,strlen(xml));
     result = write(fd,"\n",1);
     result = write(fd,fileIndexOpenTag,strlen(fileIndexOpenTag));
@@ -403,14 +423,14 @@ int main(int argc, char const *argv[])
 			end++;
 			start=end;
    		}
-    	printBST(root, invertedIndexFileName);
+    	printBST(root, fd, result);
     	return 0;
     }
     if (S_ISDIR (st_buf.st_mode)) 
     {
         //enter the recursive function
 		listdir(argv[2], root);
-		printBST(root, invertedIndexFileName);
+		printBST(root, fd, result);
 		return 0;
     }
 
