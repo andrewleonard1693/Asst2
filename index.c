@@ -44,7 +44,7 @@ char* stringCopier(char* start, char* end, int count){
 	char* returnChar = (char*)calloc((count+1),sizeof(char));
 	int i = 0;
 	while(start!=end){
-				returnChar[i]=*start;
+				returnChar[i]=tolower(*start);
 				start++;
 				i++;
 			}
