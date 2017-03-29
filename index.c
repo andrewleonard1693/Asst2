@@ -9,6 +9,8 @@
 #include <sys/stat.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#define MIN(a,b) (((a)<(b))?(a):(b))
+
 
 /*This is the node that will hold the fileNames and 
 number of occurrences in those files for each word*/
@@ -26,8 +28,150 @@ typedef struct _wNode
 	char *word;
 	struct _wNode *left;
 	struct _wNode *right;
-	struct _wNode *head;
+	struct _fNode *head;
 }wordNode;
+
+void update(char *token,wordNode* tree,char* fileName){
+	wordNode* ptr = NULL;
+	fileNode* fptr = NULL;
+	ptr = tree;
+
+	/*CASE: 1st word inputed into the tree*/
+	if(tree->word == NULL){
+		tree->word = token;
+		tree->head = (fileNode*)malloc(sizeof(fileNode));
+		fptr=tree->head;
+		fptr->next = NULL;
+		fptr->fileName = fileName;
+		fptr->numberOfOccurrences++;
+		return;
+	}
+	/*cycle through BST*/
+	while(ptr != NULL){
+		if(strncmp(ptr->word,token,MIN(strlen(ptr->word),strlen(token))) == 0){
+			if(strlen(ptr->word)>strlen(token))
+			{
+				if(ptr->left == NULL){
+				//make new WordNode
+				ptr->left = (wordNode*)malloc(sizeof(wordNode));
+				ptr = ptr->left;
+				ptr->word = token;
+				ptr->right = NULL;
+				ptr->left = NULL;
+				//make new fileNode
+				ptr->head = (fileNode*)malloc(sizeof(fileNode));
+				fptr = ptr->head;
+				fptr->next = NULL;
+				fptr->fileName = fileName;
+				fptr->numberOfOccurrences++;
+				fptr = NULL;
+				return;
+			}
+				ptr=ptr->left;
+			}else if(strlen(ptr->word)<strlen(token))
+			{
+				if(ptr->right == NULL){
+				//make new wordNode
+				ptr->right = (wordNode*)malloc(sizeof(wordNode));
+				ptr = ptr->right;
+				ptr->word = token;
+				ptr->right = NULL;
+				ptr->left = NULL;
+				//make new fileNode
+				ptr->head = (fileNode*)malloc(sizeof(fileNode));
+				fptr = ptr->head;
+				fptr->next = NULL;
+				fptr->fileName = fileName;
+				fptr->numberOfOccurrences++;
+				fptr = NULL;
+				return;
+
+				}
+				ptr=ptr->right;
+			}
+			//update occ
+			fptr = ptr->head;
+			while(fptr != NULL){
+				if(fptr->fileName == fileName){
+					fptr->numberOfOccurrences++;
+					return;
+				}
+				fptr = fptr->next;
+			}
+			//new fileName
+			fileNode* temp = ptr->head;
+			ptr->head = (fileNode*)malloc(sizeof(fileNode));
+			fptr = ptr->head;
+			fptr->next = temp;
+			fptr->fileName = fileName;
+			fptr->numberOfOccurrences++;
+			return;
+		}else if(strncmp(ptr->word,token,MIN(strlen(ptr->word),strlen(token)))>0){
+			//move left
+			if(ptr->left == NULL){
+				//make new WordNode
+				ptr->left = (wordNode*)malloc(sizeof(wordNode));
+				ptr = ptr->left;
+				ptr->word = token;
+				ptr->right = NULL;
+				ptr->left = NULL;
+				//make new fileNode
+				ptr->head = (fileNode*)malloc(sizeof(fileNode));
+				fptr = ptr->head;
+				fptr->next = NULL;
+				fptr->fileName = fileName;
+				fptr->numberOfOccurrences++;
+				fptr = NULL;
+				return;
+			}
+			ptr = ptr->left;
+		}else{
+			//move right
+			if(ptr->right == NULL){
+				//make new wordNode
+				ptr->right = (wordNode*)malloc(sizeof(wordNode));
+				ptr = ptr->right;
+				ptr->word = token;
+				ptr->right = NULL;
+				ptr->left = NULL;
+				//make new fileNode
+				ptr->head = (fileNode*)malloc(sizeof(fileNode));
+				fptr = ptr->head;
+				fptr->next = NULL;
+				fptr->fileName = fileName;
+				fptr->numberOfOccurrences++;
+				fptr = NULL;
+				return;
+			}
+			ptr = ptr->right;
+		}
+	}
+	return;
+}
+
+void printBST(wordNode* tree){
+	void printFile(fileNode* head);
+	if(tree == NULL){
+		return;
+	}
+	printBST(tree->left);
+	printf("Word = %s ",tree->word);
+	printFile(tree->head);
+	printf("\n");
+	printBST(tree->right);
+}
+
+void printFile(fileNode* head){
+	if(head == NULL){
+		return;
+	}
+	printf("(file: %s,OCC: %d) ",head->fileName,head->numberOfOccurrences);
+	printFile(head->next);
+}
+
+/*Bubble Sort methods*/
+
+
 
 /*Function to get return a copy of the text within the file*/
 char* copyFileInput(FILE *d_file);
@@ -62,8 +206,8 @@ int is_dot_or_dot_dot(char const* name)
 }
 
 /*Recursive function that goes through the directories to get to every file*/
-void listdir(char const* dirname);
-void listdir(char const* dirname)
+void listdir(char const* dirname,wordNode* root);
+void listdir(char const* dirname,wordNode* root)
 {
    char* subdir;
    DIR* dirp = opendir(dirname);
@@ -110,6 +254,7 @@ void listdir(char const* dirname)
 						char* temp = stringCopier(start,end,count);
 						printf("%s is in file: %s\n",temp,curr_ent->d_name);
 						//Call BST function here
+						update(temp,root,curr_ent->d_name);
 					}
 					if(!*end)
 					{
@@ -124,7 +269,7 @@ void listdir(char const* dirname)
       if (curr_ent->d_type == DT_DIR && !(is_dot_or_dot_dot(curr_ent->d_name)) )
       {
          // List the contents of the subdirectory.
-         listdir(subdir);
+         listdir(subdir, root);
          // Free the allocated memory.
          free(subdir);
       }
@@ -139,6 +284,8 @@ int main(int argc, char const *argv[])
 	wordNode* root=(wordNode*)malloc(1*sizeof(wordNode));
 	//set the word to null to start with
 	root->word=NULL;
+	root->left=NULL;
+	root->right=NULL;
 
 	struct dirent *something = NULL;
 	int status;
@@ -157,9 +304,11 @@ int main(int argc, char const *argv[])
     if (S_ISDIR (st_buf.st_mode)) {
         printf ("%s is a directory.\n", argv[1]);
         //enter the recursive function
-		listdir(argv[1]);
+		listdir(argv[1], root);
+		printBST(root);
 		return 0;
     }
+
 
 	// int result = 0;
 	// int nameLen = 0;
