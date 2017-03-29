@@ -299,7 +299,8 @@ void listdir(char const* dirname,wordNode* root)
    		FILE * textFile =fopen(subdir,"r");
    		if(textFile==NULL)
    		{
-   			printf("Error: %d (%s)\n", errno, strerror(errno));
+   			printf("Could not open %s\n",curr_ent->d_name);
+   			return;
    		}
    		//get string of characters from file
    		char *copiedString=copyFileInput(textFile);
@@ -378,7 +379,7 @@ int main(int argc, char const *argv[])
 
 
     if (status != 0) {
-        printf ("Error, errno = %d\n", errno);
+    	puts("Could not open passed in file. Exiting now.");
         return 1;
     }
     //Case where passed in parameter is a file and not a directory
@@ -390,7 +391,7 @@ int main(int argc, char const *argv[])
 		char *strC = (char*)calloc((inputLen+1),sizeof(char));
 		/*Test to see if the allocation of memory failed*/
 			if (strC==NULL){
-				printf("Could not allocate memory on line 17\n");
+				printf("Could not allocate memory on line 393\n");
 				return -1;
 			}
 		/*Make copy of argument string*/
