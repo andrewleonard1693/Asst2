@@ -156,17 +156,14 @@ void printBST(wordNode* tree){
 	}
 	printBST(tree->left);
 	printf("Word = %s ",tree->word);
-	printFile(tree->head);
+	fileNode *ptr = tree->head;
+	while(ptr!=NULL)
+	{
+	printf("file: %s, OCC: %d ",ptr->fileName,ptr->numberOfOccurrences);
+	ptr=ptr->next;
+	}
 	printf("\n");
 	printBST(tree->right);
-}
-
-void printFile(fileNode* head){
-	if(head == NULL){
-		return;
-	}
-	printf("(file: %s,OCC: %d) ",head->fileName,head->numberOfOccurrences);
-	printFile(head->next);
 }
 
 /*Bubble Sort methods*/
