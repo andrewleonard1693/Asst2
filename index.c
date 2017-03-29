@@ -329,6 +329,8 @@ int main(int argc, char const *argv[])
     struct stat st_buf;
 	status = stat (argv[1], &st_buf);
 
+	// char* passedInName = argv[1];
+
     if (status != 0) {
         printf ("Error, errno = %d\n", errno);
         return 1;
@@ -336,6 +338,51 @@ int main(int argc, char const *argv[])
     //Case where passed in parameter is a file and not a directory
     if (S_ISREG (st_buf.st_mode)) {
     	//Perform indexFile function here
+    	int inputLen = strlen(argv[1]);
+		/*Allocate memory for the size of the argument string*/
+		char *strC = (char*)calloc((inputLen+1),sizeof(char));
+		/*Test to see if the allocation of memory failed*/
+			if (strC==NULL){
+				printf("Could not allocate memory on line 17\n");
+				return -1;
+			}
+		/*Make copy of argument string*/
+		strcpy(strC, argv[1]);
+    	FILE * textFile =fopen(argv[1],"r");
+   		if(textFile==NULL)
+   		{
+   			printf("Error: %d (%s)\n", errno, strerror(errno));
+   		}
+
+   		//get string of characters from file
+   		char *copiedString=copyFileInput(textFile);
+   		//parse words from file
+   		char *start = copiedString;
+   		char *end = copiedString;
+   		while(*end!='\0')
+   		{
+   			int count = 0;
+   			while(isalpha(*end))
+				{
+				count++;
+				end++;
+				}
+					
+					if(count>0&&(!isalpha(*end)))
+					{
+						char* temp = stringCopier(start,end,count);
+						//Call BST function here
+						update(temp,root,strC);
+					}
+					if(!*end)
+					{
+						break;
+					}
+			end++;
+			start=end;
+   		}
+    	printBST(root);
+    	return 0;
         printf ("%s is a regular file.\n", argv[1]);
     }
     if (S_ISDIR (st_buf.st_mode)) {
