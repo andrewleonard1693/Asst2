@@ -346,6 +346,11 @@ void listdir(char const* dirname,wordNode* root)
 
 int main(int argc, char const *argv[])
 {
+	if(argc!=3)
+	{
+		printf("%s\n", "Incorrect number of arguments. Exiting now.");
+		return 0;
+	}
 	//create word BST root
 	wordNode* root=(wordNode*)malloc(1*sizeof(wordNode));
 	//set the word to null to start with
@@ -424,14 +429,21 @@ int main(int argc, char const *argv[])
 			start=end;
    		}
     	printBST(root, fd, result);
+    	result = write(fd,fileIndexCloseTag,strlen(fileIndexCloseTag));
     	return 0;
     }
-    if (S_ISDIR (st_buf.st_mode)) 
+    else if (S_ISDIR (st_buf.st_mode)) 
     {
         //enter the recursive function
 		listdir(argv[2], root);
 		printBST(root, fd, result);
+		result = write(fd,fileIndexCloseTag,strlen(fileIndexCloseTag));
 		return 0;
+    }
+    else
+    {
+    	printf("%s\n", "Argument is neither a file or directory. Exiting now.");
+    	return 0;
     }
 
 
