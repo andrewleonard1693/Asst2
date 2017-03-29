@@ -10,36 +10,25 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-typedef struct _fNode
-{
+/*This is the node that will hold the fileNames and 
+number of occurrences in those files for each word*/
+typedef struct _fNode{
 	char *fileName;
 	int numberOfOccurrences;
+	struct _fNode *next;
 }fileNode;
 
+/*Word node contans the word string, left and right pointers, 
+and a head pointer to the first node in the linked list of file names that
+the word appears in.*/
 typedef struct _wNode
 {
 	char *word;
-	int isNull;
 	struct _Node *left;
 	struct _Node *right;
 	struct _fNode *head;
 }wordNode;
 
-
-
-/*indexDirectory(directoryName, myIndex){
-	open directoryName
-	while(we havent finished everything in directoryName){
-		thing = get something from directoryName
-		if(thing is a file){
-			indexFile(thing, myIndex);
-		}
-		else if(thing is a directory)
-		{
-			indexDirectory(thing, myIndex)
-		}
-	}
-}*/
 char* copyFileInput(FILE *d_file);
 char* copyFileInput(FILE *d_file)
 {
@@ -80,15 +69,19 @@ void listdir(char const* dirname)
       return;
    }
 
-   while ( (curr_ent = readdir(dirp)) != NULL )
+   while ((curr_ent = readdir(dirp)) != NULL )
    { 
+   		// Allocate memory for the subdirectory.
+        // 1 additional for the '/' and the second additional for '\0'.
+         subdir = malloc(strlen(dirname) + strlen(curr_ent->d_name) + 2);
+         // Flesh out the subdirectory name.
+         strcpy(subdir, dirname);
+         strcat(subdir, "/");
+         strcat(subdir, curr_ent->d_name);
    	if(curr_ent->d_type==DT_REG)
    	{
-   		char path[200];
-   		char *res = realpath(curr_ent->d_name, res);
-   		printf("%s\n", res);
    		//open file
-   		FILE * textFile =fopen(curr_ent->d_name,"r");
+   		FILE * textFile =fopen(subdir,"r");
    		if(textFile==NULL)
    		{
    			printf("Error: %d (%s)\n", errno, strerror(errno));
@@ -102,48 +95,35 @@ void listdir(char const* dirname)
    		{
    			int count = 0;
    			while(isalpha(*end))
+				{
+				count++;
+				end++;
+				}
+					
+					if(count>0&&(!isalpha(*end)))
 					{
-						count++;
-						end++;
+						char* temp = stringCopier(start,end,count);
+						printf("%s is in file: %s\n",temp,curr_ent->d_name);
+						//Call BST function here
 					}
-							if(count>0&&(!isalpha(*end)))
-							{
-								char* temp = stringCopier(start,end,count);
-								printf("%s\n", temp);
-							}
-							if(!*end)
-							{
-								break;
-							}
-						end++;
-						start=end;
+					if(!*end)
+					{
+						break;
+					}
+			end++;
+			start=end;
    		}
-   		//insert all words from file into a BST
-
-   		printf("%s\n", curr_ent->d_name);	
    	}
 
-      // Traverse sub-directories excluding . and ..
-       // Ignore . and ..
+      // Traverse sub-directories excluding ignoring . and ..
       if (curr_ent->d_type == DT_DIR && !(is_dot_or_dot_dot(curr_ent->d_name)) )
       {
-         // Allocate memory for the subdirectory.
-         // 1 additional for the '/' and the second additional for '\0'.
-         subdir = malloc(strlen(dirname) + strlen(curr_ent->d_name) + 2);
-
-         // Flesh out the subdirectory name.
-         strcpy(subdir, dirname);
-         strcat(subdir, "/");
-         strcat(subdir, curr_ent->d_name);
-
          // List the contents of the subdirectory.
          listdir(subdir);
-
          // Free the allocated memory.
          free(subdir);
       }
    }
-
    // Close the directory
    closedir(dirp);
 }
@@ -152,7 +132,8 @@ int main(int argc, char const *argv[])
 {
 	//create word BST root
 	wordNode* root=(wordNode*)malloc(1*sizeof(wordNode));
-	root->isNull=-1;
+	//set the word to null to start with
+	root->word=NULL;
 
 	struct dirent *something = NULL;
 	int status;
@@ -163,13 +144,14 @@ int main(int argc, char const *argv[])
         printf ("Error, errno = %d\n", errno);
         return 1;
     }
-
+    //Case where passed in parameter is a file and not a directory
     if (S_ISREG (st_buf.st_mode)) {
-    	//Perform indexFile function
+    	//Perform indexFile function here
         printf ("%s is a regular file.\n", argv[1]);
     }
     if (S_ISDIR (st_buf.st_mode)) {
         printf ("%s is a directory.\n", argv[1]);
+        //enter the recursive function
 		listdir(argv[1]);
 		return 0;
     }
