@@ -148,6 +148,49 @@ void update(char *token,wordNode* tree,char* fileName){
 	}
 	return;
 }
+void swap(fileNode *a, fileNode *b);
+void swap(fileNode *a, fileNode *b)
+{
+    int temp = a->numberOfOccurrences;
+    a->numberOfOccurrences = b->numberOfOccurrences;
+    b->numberOfOccurrences = temp;
+
+    int len = strlen(a->fileName);
+    char *tempStr;
+    tempStr= a->fileName;
+    a->fileName = b->fileName;
+    b->fileName= tempStr;
+}
+void bubbleSort(fileNode *start);
+void bubbleSort(fileNode *start)
+{
+    int swapped, i;
+    fileNode *ptr1;
+    fileNode *lptr = NULL;
+ 
+    /* Checking for empty list */
+    if (ptr1 == NULL)
+        return;
+ 
+    do
+    {
+        swapped = 0;
+        ptr1 = start;
+ 
+        while (ptr1->next != lptr)
+        {
+            if (ptr1->numberOfOccurrences < ptr1->next->numberOfOccurrences)
+            { 
+                swap(ptr1, ptr1->next);
+                swapped = 1;
+            }
+            ptr1 = ptr1->next;
+        }
+        lptr = ptr1;
+    }
+    while (swapped);
+}
+
 
 void printBST(wordNode* tree){
 	void printFile(fileNode* head);
@@ -157,6 +200,7 @@ void printBST(wordNode* tree){
 	printBST(tree->left);
 	printf("Word = %s ",tree->word);
 	fileNode *ptr = tree->head;
+	bubbleSort(tree->head);
 	while(ptr!=NULL)
 	{
 	printf("file: %s, OCC: %d ",ptr->fileName,ptr->numberOfOccurrences);
@@ -165,10 +209,6 @@ void printBST(wordNode* tree){
 	printf("\n");
 	printBST(tree->right);
 }
-
-/*Bubble Sort methods*/
-
-
 
 /*Function to get return a copy of the text within the file*/
 char* copyFileInput(FILE *d_file);
