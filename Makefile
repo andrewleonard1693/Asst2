@@ -1,4 +1,4 @@
 make:
 	gcc -g -Wall -Werror index.c
 clean:
-	rm a.out
+	rm -f a.out

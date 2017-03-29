@@ -155,8 +155,6 @@ void swap(fileNode *a, fileNode *b)
     int temp = a->numberOfOccurrences;
     a->numberOfOccurrences = b->numberOfOccurrences;
     b->numberOfOccurrences = temp;
-
-    int len = strlen(a->fileName);
     char *tempStr;
     tempStr= a->fileName;
     a->fileName = b->fileName;
@@ -165,12 +163,12 @@ void swap(fileNode *a, fileNode *b)
 void bubbleSort(fileNode *start);
 void bubbleSort(fileNode *start)
 {
-    int swapped, i;
-    fileNode *ptr1;
+    int swapped;
+    fileNode *ptr1=NULL;
     fileNode *lptr = NULL;
  
     /* Checking for empty list */
-    if (ptr1 == NULL)
+    if (start == NULL)
         return;
  
     do
@@ -358,8 +356,7 @@ int main(int argc, char const *argv[])
 	root->word=NULL;
 	root->left=NULL;
 	root->right=NULL;
-
-	struct dirent *something = NULL;
+	
 	int status;
     struct stat st_buf;
 
@@ -369,7 +366,6 @@ int main(int argc, char const *argv[])
     char *xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
     static char *fileIndexOpenTag = "<fileIndex>";
     static char *fileIndexCloseTag = "</fileIndex>";
-    static char *wordCloseTag = "</word>";
     result = write(fd,xml,strlen(xml));
     result = write(fd,"\n",1);
     result = write(fd,fileIndexOpenTag,strlen(fileIndexOpenTag));
