@@ -31,7 +31,8 @@ typedef struct _wNode
 	struct _fNode *head;
 }wordNode;
 
-void update(char *token,wordNode* tree,char* fileName){
+void update(char *token,wordNode* tree,char* fileName)
+{
 	wordNode* ptr = NULL;
 	fileNode* fptr = NULL;
 	ptr = tree;
@@ -192,12 +193,18 @@ void bubbleSort(fileNode *start)
 }
 
 
-void printBST(wordNode* tree){
-	void printFile(fileNode* head);
+void printBST(wordNode* tree, const char* index)
+{
 	if(tree == NULL){
 		return;
 	}
-	printBST(tree->left);
+	printBST(tree->left, index);
+	// char *string = (char*)calloc(14+1+strlen(tree->word),sizeof(char));
+	// sprintf(string,"<word text="%s">",tree->word);
+	// int fd = open(index,O_RDWR|O_CREAT,S_IWUSR|S_IRUSR);
+	// int result = write(fd,string,strlen(string));
+	// result = write(fd,"\n",1);
+
 	printf("Word = %s ",tree->word);
 	fileNode *ptr = tree->head;
 	bubbleSort(tree->head);
@@ -207,7 +214,7 @@ void printBST(wordNode* tree){
 	ptr=ptr->next;
 	}
 	printf("\n");
-	printBST(tree->right);
+	printBST(tree->right, index);
 }
 
 /*Function to get return a copy of the text within the file*/
@@ -224,7 +231,8 @@ char* copyFileInput(FILE *d_file)
 /*Function to take our start and end pointers that are on the copied string
 and create a new string to be returned.*/
 char* stringCopier(char* start, char* end, int count);
-char* stringCopier(char* start, char* end, int count){
+char* stringCopier(char* start, char* end, int count)
+{
 	char* returnChar = (char*)calloc((count+1),sizeof(char));
 	int i = 0;
 	while(start!=end){
@@ -327,18 +335,32 @@ int main(int argc, char const *argv[])
 	struct dirent *something = NULL;
 	int status;
     struct stat st_buf;
-	status = stat (argv[1], &st_buf);
 
-	// char* passedInName = argv[1];
+    const char *invertedIndexFileName = argv[1]; //get the file name for the inverted index file
+    int fd = open(invertedIndexFileName,O_RDWR|O_CREAT,S_IWUSR|S_IRUSR);
+    int result = 0;
+    char *xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
+    static char *fileIndexOpenTag = "<fileIndex>";
+    static char *fileIndexCloseTag = "</fileIndex>";
+    static char *wordCloseTag = "</word>";
+    static char *fileCloseTag = "</file>";
+    result = write(fd,xml,strlen(xml));
+    result = write(fd,"\n",1);
+    result = write(fd,fileIndexOpenTag,strlen(fileIndexOpenTag));
+    result = write(fd,"\n",1);
+
+	status = stat (argv[2], &st_buf);
+
 
     if (status != 0) {
         printf ("Error, errno = %d\n", errno);
         return 1;
     }
     //Case where passed in parameter is a file and not a directory
-    if (S_ISREG (st_buf.st_mode)) {
+    if (S_ISREG (st_buf.st_mode)) 
+    {
     	//Perform indexFile function here
-    	int inputLen = strlen(argv[1]);
+    	int inputLen = strlen(argv[2]);
 		/*Allocate memory for the size of the argument string*/
 		char *strC = (char*)calloc((inputLen+1),sizeof(char));
 		/*Test to see if the allocation of memory failed*/
@@ -347,8 +369,8 @@ int main(int argc, char const *argv[])
 				return -1;
 			}
 		/*Make copy of argument string*/
-		strcpy(strC, argv[1]);
-    	FILE * textFile =fopen(argv[1],"r");
+		strcpy(strC, argv[2]);
+    	FILE * textFile =fopen(argv[2],"r");
    		if(textFile==NULL)
    		{
    			printf("Error: %d (%s)\n", errno, strerror(errno));
@@ -381,22 +403,19 @@ int main(int argc, char const *argv[])
 			end++;
 			start=end;
    		}
-    	printBST(root);
+    	printBST(root, invertedIndexFileName);
     	return 0;
-        printf ("%s is a regular file.\n", argv[1]);
     }
-    if (S_ISDIR (st_buf.st_mode)) {
-        printf ("%s is a directory.\n", argv[1]);
+    if (S_ISDIR (st_buf.st_mode)) 
+    {
         //enter the recursive function
-		listdir(argv[1], root);
-		printBST(root);
+		listdir(argv[2], root);
+		printBST(root, invertedIndexFileName);
 		return 0;
     }
 
 
 	// int result = 0;
 	// int nameLen = 0;
-	// char *invertedIndexFileName = argv[1]; //get the file name for the inverted index file
-	// const char *startingDirectory = argv[1];
-	// int fd = open("./invertedIndexFileName",O_RDWR|O_CREAT,S_IWUSR|S_IRUSR);
+	
 }
