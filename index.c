@@ -24,11 +24,12 @@ the word appears in.*/
 typedef struct _wNode
 {
 	char *word;
-	struct _Node *left;
-	struct _Node *right;
-	struct _fNode *head;
+	struct _wNode *left;
+	struct _wNode *right;
+	struct _wNode *head;
 }wordNode;
 
+/*Function to get return a copy of the text within the file*/
 char* copyFileInput(FILE *d_file);
 char* copyFileInput(FILE *d_file)
 {
@@ -39,6 +40,8 @@ char* copyFileInput(FILE *d_file)
     fread(string,1,size,d_file);
     return string;
 }
+/*Function to take our start and end pointers that are on the copied string
+and create a new string to be returned.*/
 char* stringCopier(char* start, char* end, int count);
 char* stringCopier(char* start, char* end, int count){
 	char* returnChar = (char*)calloc((count+1),sizeof(char));
@@ -51,12 +54,14 @@ char* stringCopier(char* start, char* end, int count){
 			return returnChar;	
 }
 
+/*Function ignores the . and .. when we are going through directories*/
 int is_dot_or_dot_dot(char const* name);
 int is_dot_or_dot_dot(char const* name)
 {
    return (strcmp(name, ".") == 0 || strcmp(name, "..") == 0 );
 }
 
+/*Recursive function that goes through the directories to get to every file*/
 void listdir(char const* dirname);
 void listdir(char const* dirname)
 {
