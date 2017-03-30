@@ -317,7 +317,10 @@ void listdir(char const* dirname,wordNode* root)
 					if(count>0&&(!isalpha(*end)))
 					{
 						char* temp = stringCopier(start,end,count);
-						printf("%s is in file: %s\n",temp,curr_ent->d_name);
+						if(strlen(temp)==0)
+						{
+							return;
+						}
 						//Call BST function here
 						update(temp,root,curr_ent->d_name);
 					}
@@ -361,6 +364,14 @@ int main(int argc, char const *argv[])
     struct stat st_buf;
 
     const char *invertedIndexFileName = argv[1]; //get the file name for the inverted index file
+
+	status = stat (argv[2], &st_buf);
+
+
+    if (status != 0) {
+    	puts("You passed in an empty file. Exiting now.");
+        return 1;
+    }
     int fd = open(invertedIndexFileName,O_RDWR|O_CREAT,S_IWUSR|S_IRUSR);
     int result = 0;
     char *xml = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
@@ -370,14 +381,8 @@ int main(int argc, char const *argv[])
     result = write(fd,"\n",1);
     result = write(fd,fileIndexOpenTag,strlen(fileIndexOpenTag));
     result = write(fd,"\n",1);
+    int rem = 0;
 
-	status = stat (argv[2], &st_buf);
-
-
-    if (status != 0) {
-    	puts("Could not open passed in file. Exiting now.");
-        return 1;
-    }
     //Case where passed in parameter is a file and not a directory
     if (S_ISREG (st_buf.st_mode)) 
     {
@@ -400,6 +405,13 @@ int main(int argc, char const *argv[])
 
    		//get string of characters from file
    		char *copiedString=copyFileInput(textFile);
+   		if(strlen(copiedString)==0)
+   		{
+   			printf("%s\n", "You passed in an empty file.");
+   			fclose(textFile);
+   			rem = unlink(strC);
+   			return 0;
+   		}
    		//parse words from file
    		char *start = copiedString;
    		char *end = copiedString;
