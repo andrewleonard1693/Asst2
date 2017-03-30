@@ -1,3 +1,5 @@
+/*Authors : Andrew Leonard & Brad Fisher*/
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
@@ -227,8 +229,6 @@ void printBST(wordNode* tree, int fd, int res)
 			res = write(fd,"\t",1);
 			res = write(fd,"\t",1);
 		}
-	// printf("file: %s, OCC: %d ",ptr->fileName,ptr->numberOfOccurrences);
-
 	ptr=ptr->next;
 	}
 	res = write(fd,wordCloseTag,strlen(wordCloseTag));
@@ -356,7 +356,7 @@ int main(int argc, char const *argv[])
 	root->word=NULL;
 	root->left=NULL;
 	root->right=NULL;
-	
+
 	int status;
     struct stat st_buf;
 
